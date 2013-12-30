@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'css2less'
+
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: css2less-recursive folder"
+
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+
+end
+
+parser.parse!
+
+if ARGV.empty?
+  puts parser
+  exit
+end
+ 
+folder = ARGV[0]
+
+Dir.glob("#{folder}/**/*.css", File::FNM_DOTMATCH) do |f|
+  file = File.stat(f)
+  next unless file.file?
+  converter = Css2Less::Converter.new(File.read(f))
+  converter.process_less
+  File.write(f.gsub(/.css$/,'.less'), converter.get_less)
+end
